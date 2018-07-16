@@ -1,107 +1,42 @@
-var gulp = require('gulp');
-var sass = require('gulp-sass');
-var header = require('gulp-header');
-var cleanCSS = require('gulp-clean-css');
-var rename = require("gulp-rename");
-var pkg = require('./package.json');
-var browserSync = require('browser-sync').create();
+function getdata(){
+    var key = document.getElementById("search").value;
+    let url = `http://127.0.0.1:3000/${key}`;
+    document.querySelector("body").background = "";
 
-// Set the banner content
-var banner = ['/*!\n',
-  ' * Start Bootstrap - <%= pkg.title %> v<%= pkg.version %> (<%= pkg.homepage %>)\n',
-  ' * Copyright 2013-' + (new Date()).getFullYear(), ' <%= pkg.author %>\n',
-  ' * Licensed under <%= pkg.license %> (https://github.com/BlackrockDigital/<%= pkg.name %>/blob/master/LICENSE)\n',
-  ' */\n',
-  ''
-].join('');
+fetch(url)
+.then(res => res.json())
+.then((out) => {
+    for(let i=0; i<5; i++) {
+        var jsonurl = out.collection.items[i].href;
+        fetch(jsonurl)
+            .then(res => res.json())
+            .then((image) => {
+                var pic = image[0];
+                console.log(pic);
 
-// Copy third party libraries from /node_modules into /vendor
-gulp.task('vendor', function() {
-
-  // Bootstrap
-  gulp.src([
-      './node_modules/bootstrap/dist/**/*',
-      '!./node_modules/bootstrap/dist/css/bootstrap-grid*',
-      '!./node_modules/bootstrap/dist/css/bootstrap-reboot*'
-    ])
-    .pipe(gulp.dest('./vendor/bootstrap'))
-
-  // Font Awesome
-  gulp.src([
-      './node_modules/font-awesome/**/*',
-      '!./node_modules/font-awesome/{less,less/*}',
-      '!./node_modules/font-awesome/{scss,scss/*}',
-      '!./node_modules/font-awesome/.*',
-      '!./node_modules/font-awesome/*.{txt,json,md}'
-    ])
-    .pipe(gulp.dest('./vendor/font-awesome'))
-
-  // jQuery
-  gulp.src([
-      './node_modules/jquery/dist/*',
-      '!./node_modules/jquery/dist/core.js'
-    ])
-    .pipe(gulp.dest('./vendor/jquery'))
-
-  // jQuery Easing
-  gulp.src([
-      './node_modules/jquery.easing/*.js'
-    ])
-    .pipe(gulp.dest('./vendor/jquery-easing'))
-
-  // Simple Line Icons
-  gulp.src([
-      './node_modules/simple-line-icons/fonts/**',
-    ])
-    .pipe(gulp.dest('./vendor/simple-line-icons/fonts'))
-
-  gulp.src([
-      './node_modules/simple-line-icons/css/**',
-    ])
-    .pipe(gulp.dest('./vendor/simple-line-icons/css'))
-
-});
-
-// Compile SCSS
-gulp.task('css:compile', function() {
-  return gulp.src('./scss/**/*.scss')
-    .pipe(sass.sync({
-      outputStyle: 'expanded'
-    }).on('error', sass.logError))
-    .pipe(gulp.dest('./css'))
-});
-
-// Minify CSS
-gulp.task('css:minify', ['css:compile'], function() {
-  return gulp.src([
-      './css/*.css',
-      '!./css/*.min.css'
-    ])
-    .pipe(cleanCSS())
-    .pipe(rename({
-      suffix: '.min'
-    }))
-    .pipe(gulp.dest('./css'))
-    .pipe(browserSync.stream());
-});
-
-// CSS
-gulp.task('css', ['css:compile', 'css:minify']);
-
-// Default task
-gulp.task('default', ['css', 'vendor']);
-
-// Configure the browserSync task
-gulp.task('browserSync', function() {
-  browserSync.init({
-    server: {
-      baseDir: "./"
+                $(".container4").hide();
+                $("#result").append(`<div class="jumbotron" id="id_${i}"> \
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12" style="text-align:center; margin:0;">
+                       <img src=${pic} width=50% height=100%>
+                    </div>
+                </div>
+            </div>`);
+            })
+            .catch(err => {throw err});
     }
-  });
-});
+})
+.catch(err => { throw err });
+}
 
-// Dev task
-gulp.task('dev', ['css', 'browserSync'], function() {
-  gulp.watch('./scss/*.scss', ['css']);
-  gulp.watch('./*.html', browserSync.reload);
-});
+window.onload = function(){
+    let url = "https://api.nasa.gov/planetary/apod?api_key=wIbFNvwjLvxNtDJFwnn7KjoqlOvdBYubIzUh5hJI";
+    fetch(url)
+        .then(res => res.json())
+        .then((out) => {
+            image = out.hdurl;
+            document.querySelector("body").background = `${image}`;
+            console.log(image);
+        })
+        .catch(err => { throw err });
+        }
